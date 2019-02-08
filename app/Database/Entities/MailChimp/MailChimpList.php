@@ -111,6 +111,16 @@ class MailChimpList extends MailChimpEntity
     }
 
     /**
+     * Get mailchimp list name.
+     *
+     * @return null|string
+     */
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    /**
      * Get validation rules for mailchimp entity.
      *
      * @return array
