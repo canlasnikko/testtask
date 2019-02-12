@@ -70,11 +70,11 @@ class MailChimpMember extends MailChimpEntity
     private $locations;
 
     /**
-     * @ORM\Column(name="list_subscriptions", type="array")
+     * @ORM\Column(name="list_subscription", type="string", nullable=true)
      *
-     * @var array
+     * @var string
      */
-    private $listSubscriptions = [];
+    private $listSubscription = [];
 
     /**
      * Get member id.
@@ -91,9 +91,9 @@ class MailChimpMember extends MailChimpEntity
      *
      * @return null|array
      */
-    public function getListSubscriptions(): ?array
+    public function getListSubscription(): string
     {
-        return $this->listSubscriptions;
+        return $this->listSubscription;
     }
 
     /**
@@ -133,8 +133,7 @@ class MailChimpMember extends MailChimpEntity
     {
         return [
             'email_address' => 'required|email',
-            'status' => 'required|string',
-            'list_subscription' => 'required|string'
+            'status' => 'required|string'
         ];
     }
 
@@ -237,15 +236,15 @@ class MailChimpMember extends MailChimpEntity
     }
 
     /**
-     * Set list subscriptions.
+     * Set list subscription.
      *
-     * @param array $listSubscriptions
+     * @param string $listSubscription
      *
      * @return MailChimpMember
      */
-    public function setListSubscriptions(array $listSubscriptions): MailChimpMember
+    public function setListSubscription(string $listSubscription): MailChimpMember
     {
-        $this->listSubscriptions = $listSubscriptions;
+        $this->listSubscription = $listSubscription;
 
         return $this;
     }

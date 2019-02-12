@@ -73,10 +73,6 @@ $app->singleton(Illuminate\Contracts\Console\Kernel::class, App\Console\Kernel::
 $app->register(LaravelDoctrine\ORM\DoctrineServiceProvider::class);
 $app->register(\Mailchimp\MailchimpServiceProvider::class);
 
-/* Aliases */
-class_alias('LaravelDoctrine\ORM\Facades\EntityManager', 'EntityManager');
-class_alias('LaravelDoctrine\ORM\Facades\Registry', 'Registry');
-class_alias('LaravelDoctrine\ORM\Facades\Doctrine', 'Doctrine');
 
 /*
 |--------------------------------------------------------------------------

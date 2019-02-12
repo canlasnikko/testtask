@@ -39,9 +39,8 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function add(Request $request): JsonResponse
+    public function add(Request $request, string $listId): JsonResponse
     {
-        $listId = $request->get('list_id');
         // Retrieve list id and check if it exist or not
         $list = $this->entityManager->getRepository(MailChimpList::class)->find($listId);
 
@@ -74,7 +73,7 @@ class MembersController extends Controller
             
             $member->setUniqueEmailId($response->get('unique_email_id'));
             $member->setSubscriberHash($response->get('id'));
-            $member->setListSubscriptions(array($listId));
+            $member->setListSubscription($listId);
             // Save list into db
             $this->saveEntity($member);
         } catch (Exception $exception) {
@@ -94,21 +93,10 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function remove(Request $request, string $memberId): JsonResponse
+    public function remove(Request $request, string $listId, string $memberId): JsonResponse
     {
-        // Check if request have correct body format
-        $deleteLists = $request->get('list_subscriptions');
-
-        if (empty($deleteLists) || !isset($deleteLists)) {
-            return $this->errorResponse(
-                ['message' => 'Invalid request parameter'],
-                404
-            );
-        }
-
         // Retrieve member id and check if it exist or not
         $member = $this->entityManager->getRepository(MailChimpMember::class)->find($memberId);
-
         if ($member === null) {
             return $this->errorResponse(
                 ['message' => \sprintf('MailChimp Member [%s] not found', $memberId)],
@@ -116,24 +104,20 @@ class MembersController extends Controller
             );
         }
 
+        $list = $this->entityManager->getRepository(MailChimpList::class)->find($listId);
+        if ($list === null) {
+            return $this->errorResponse(
+                ['message' => \sprintf('MailChimp List [%s] not found', $listId)],
+                404
+            );
+        }
+
         try {
-            $memberList = $member->getListSubscriptions();
-            // Iterate to the request list subscriptions to remove
-            foreach ($deleteLists as $deleteList) {
-                $list = $this->entityManager->getRepository(MailChimpList::class)->find($deleteList);
-
-                if ($list === null) continue;
-                // Call MailChimp API to remove member subscription in a list
-                $this->mailChimp->delete(\sprintf('lists/%s/members/%s', 
-                    $list->getMailChimpId(), $member->getSubscriberHash()));
-                // Update member's subscribed list
-                if (($key = array_search($deleteList, $memberList)) !== false) {
-                    unset($memberList[$key]);
-                }
-            }
-
-            $member->setListSubscriptions($memberList);
-            $this->saveEntity($member);
+            $memberList = $member->getListSubscription();
+            // Call MailChimp API to remove member subscription in a list
+            $this->mailChimp->delete(\sprintf('lists/%s/members/%s', $list->getMailChimpId(), 
+                $member->getSubscriberHash()));
+            $this->removeEntity($member);
         } catch (Exception $exception) {
             // Return error response if something goes wrong
             return $this->errorResponse(['message' => $exception->getMessage()]);
@@ -151,11 +135,10 @@ class MembersController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, string $memberId): JsonResponse
+    public function update(Request $request, string $listId, string $memberId): JsonResponse
     {
         // Retrieve member id and check if it exist or not
         $member = $this->entityManager->getRepository(MailChimpMember::class)->find($memberId);
-
         if ($member === null) {
             return $this->errorResponse(
                 ['message' => \sprintf('MailChimp Member [%s] not found', $memberId)],
@@ -173,8 +156,7 @@ class MembersController extends Controller
             ]);
         }
 
-        $list = $this->entityManager->getRepository(MailChimpList::class)->find($request->get('list_subscription'));
-
+        $list = $this->entityManager->getRepository(MailChimpList::class)->find($listId);
         if ($list === null) {
             return $this->errorResponse(
                 ['message' => \sprintf('MailChimp List ID [%s] not found', $listId)],
