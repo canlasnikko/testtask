@@ -81,8 +81,7 @@ class MembersController extends Controller
             return $this->errorResponse(['message' => $exception->getMessage()]);
         }
 
-        return $this->successfulResponse(['message' => \sprintf('Member %s successfully added to %s', 
-            $member->getMemberId(), $list->getName())]);
+        return $this->successfulResponse(['member_id' => $member->getMemberId()]);
     }
 
     /**
