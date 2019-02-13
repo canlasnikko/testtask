@@ -76,6 +76,9 @@ class MembersController extends Controller
             $member->setListSubscription($listId);
             // Save list into db
             $this->saveEntity($member);
+
+            $list->addListMember($member);
+            $this->saveEntity($list);
         } catch (Exception $exception) {
             // Return error response if something goes wrong
             return $this->errorResponse(['message' => $exception->getMessage()]);

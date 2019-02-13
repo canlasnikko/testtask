@@ -5,6 +5,9 @@ namespace App\Database\Entities\MailChimp;
 
 use Doctrine\ORM\Mapping as ORM;
 use EoneoPay\Utils\Str;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Database\Entities\MailChimp\MailChimpMember;
 
 /**
  * @ORM\Entity()
@@ -89,6 +92,35 @@ class MailChimpList extends MailChimpEntity
      * @var string
      */
     private $visibility;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="MailChimpMember")
+     * @ORM\JoinTable(name="list_member")
+     *
+     * @var Collection
+     */
+    private $listMembers;
+
+    public function __construct(?array $data = null)
+    {
+        if ($data !== null) {
+            $this->fill($data);
+        }
+        $this->listMembers = new ArrayCollection();
+    }
+
+    public function addListMember(MailChimpMember $member)
+    {
+        $this->listMembers[] = $member;
+    }
+
+    /**
+     * @return Collection|listMembers[]
+     */
+    public function getListMembers(): Collection
+    {
+        return $this->listMembers;
+    }
 
     /**
      * Get id.
